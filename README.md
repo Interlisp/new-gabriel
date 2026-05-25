@@ -11,87 +11,17 @@ The benchmark set comes from the work documented by Richard P. Gabriel in [*Perf
 ### 0. Clone the repository
 
 ```bash
-git clone https://github.com/hjellinek/new-gabriel.git
+git clone https://github.com/interlisp/new-gabriel.git
 cd gabriel
 ```
 
-### 1. Compilation
-
-Compile the files. (WIP)
-
-#### Common utilities
-
-```lisp
-cd {gabriel}<tools>
-(cl:compile-file "gabriel-timers")
-(load "gabriel-timers.dfasl")
-(cl:compile-file "gabriel-other")
-;; get warning that MULTIPLE-TIMED-DURATION was called from RUN-ONE, but not defined!
-(load "gabriel-other.dfasl")
-(cl:compile-file "gabriel-tak")
-(load "gabriel-tak.dfasl")
-```
-
-#### Bench-1
-
-```lisp
-cd {gabriel}<benchmarks>bench-1>
-(cl:compile-file "arith-benchmarks")
-```
-
-Needed to recreate `TAK`.
-
-```lisp
-(cl:compile-file "tak")
-```
-
-In the files below, added a `define-file-environment` to every source file.
-
-Renamed `NEW-BENCH-1` to `BENCH-1`.  After `RENAME`, deleted `FILEDATES` property
-from `BENCH-1`
-
-```lisp
-(makefile 'bench-1)
-(cl:compile-file "bench-1")
-```
-
-In `BENCH-2`, renamed `NEW-BENCH-2` to `BENCH-2`.
-```lisp
-cd ../bench-2
-(makefile 'bench-2)
-(cl:compile-file "bench-2")
-```
-
-In `BENCH-3`, renamed `NEW-BENCH-3` to `BENCH-3`.
-```lisp
-cd ../bench-3
-(makefile 'bench-3)
-(cl:compile-file "bench-3")
-```
-
-In `BENCH-4`, renamed `NEW-BENCH-4` to `BENCH-4`.
-```lisp
-cd ../bench-4
-(makefile 'bench-4)
-(cl:compile-file "bench-4")
-```
-
-In `BENCH-5`, renamed `NEW-BENCH-5` to `BENCH-4`.
-```lisp
-cd ../bench-5
-(makefile 'bench-5)
-(cl:compile-file "bench-5")
-(makefile 'misc-benchmarks)
-(cl:compile-file 'misc-benchmarks)
-```
-
-### 2. Make the runner executable
+### 1. Make the runner executable
 
 ```bash
 chmod +x do-bench.sh
 ```
 
-### 3. Set MEDLEYDIR (required before first run)
+### 2. Set MEDLEYDIR (required before first run)
 
 Set only `MEDLEYDIR` to your Medley install path:
 
@@ -99,52 +29,27 @@ Set only `MEDLEYDIR` to your Medley install path:
 export MEDLEYDIR="/absolute/path/to/medley"
 ```
 
-Or pass it inline for one run:
+### 3. Run a benchmark suite
+
+The `do-bench.sh` script expects three arguments:
+
+- bench-name - a human-readable name, e.g., "First Benchmark"
+- bench-file - the name of the benchmark file, normally one of `BENCH-1`, ..., `BENCH-5`
+- bench-fn - the name of the benchmark function, normally identical to the name of the file
+
+For example,
 
 ```bash
-MEDLEYDIR="/absolute/path/to/medley" ./do-bench.sh bench-1
-```
-
-### 4. Run a benchmark suite
-
-```bash
-./do-bench.sh bench-1
-./do-bench.sh bench-2
-./do-bench.sh bench-3
-./do-bench.sh bench-4
-./do-bench.sh bench-5
+./do-bench.sh "TAK, ARITH, IO Benchmarks" BENCH-1 BENCH-1
 ```
 
 ## What Each Suite Runs
 
-- `bench-1`: TAK, ARITH, IO
-- `bench-2`: AREFY (and IO support load)
-- `bench-3`: CONSY
-- `bench-4`: POLY
-- `bench-5`: MISC (with IO and MISC support loads)
-
-## Benchmark Summary
-
-- `bench-1`
-   - Main tests: `TAK`, `ARITH`, `IO`
-   - Expected output files: `AV-TAK.txt`, `IO.txt`, `PAV-ARITH.txt`
-   - Current status: runs
-- `bench-2`
-   - Main tests: `AREFY` and related benchmark set
-   - Expected output file: `AREFY.txt`
-   - Current status: has known storage exhaustion issue
-- `bench-3`
-   - Main tests: `CONSY`
-   - Expected output file: `CONSY.txt`
-   - Current status: runs
-- `bench-4`
-   - Main tests: `POLY`
-   - Expected output file: `POLY.txt`
-   - Current status: runs
-- `bench-5`
-   - Main tests: `MISC`
-   - Expected output file: `MISC.txt`
-   - Current status: has known stack overflow issue
+- `BENCH-1`: TAK, ARITH, IO
+- `BENCH-2`: AREFY (and IO support load)
+- `BENCH-3`: CONSY
+- `BENCH-4`: POLY
+- `BENCH-5`: MISC (with IO and MISC support loads)
 
 ## Results
 
@@ -155,101 +60,4 @@ Each run writes output under `Results/`:
 - `Results/BENCH-3/`
 - `Results/BENCH-4/`
 - `Results/BENCH-5/`
-
-Important: `do-bench.sh` currently loads `NEW-BENCH-*.LCOM` for all suites. To get `.txt` output in actual runs, recompile each `NEW-BENCH-*` source in Medley so the updated output names are included in the `.LCOM` files.
-
-## Issue Groups And Recovery Steps
-   
-### Group B: BENCH-5 runtime stability issue
-
-- What happened
-   - BENCH-5 can fail with stack overflow and force a hard reset/URAID prompt.
-- Why
-   - During BENCH-5 execution, stack usage can grow until Medley reports stack full.
-- Error lines
-   - `WARN: freestackblock:StackFull ...`
-   - `Error Stack Overflow, MUST HARDRESET!`
-   - `Enter the URaid`
-
-### Group C: BENCH-2 known storage issue
-
-- What happened
-   - BENCH-2 can stop during TRIANG with storage exhaustion.
-- Error line
-   - `In IL: DOSTORAGEFULLINTERRUPT: Serious condition XCL: STORAGE-EXHAUSTED occurred.`
-
-- Additional context
-   - Starting VMem - 21%
-   - End Vmem - 97%
-
-## Project Layout
-
-```text
-do-bench.sh
-README.md
-
-tools/
-   GABRIEL-TIMERS
-   GABRIEL-TIMERS.LCOM
-   GABRIEL-OTHER
-   GABRIEL-OTHER.LCOM
-   GABRIEL-TAK
-   GABRIEL-TAK.LCOM
-
-aux/
-   1000-SYMBOLS
-   2000-FLOATS-TO-READ
-
-Benchmarks/
-   BENCH-1/
-      NEW-BENCH-1
-      NEW-BENCH-1.LCOM
-      TAK
-      TAK.LCOM
-      ARITH-BENCHMARKS
-      ARITH-BENCHMARKS.LCOM
-      IO-BENCHMARKS
-      IO-BENCHMARKS.LCOM
-   BENCH-2/
-      NEW-BENCH-2
-      NEW-BENCH-2.LCOM
-      IO-BENCHMARKS
-      IO-BENCHMARKS.LCOM
-   BENCH-3/
-      NEW-BENCH-3
-      NEW-BENCH-3.LCOM
-      IO-BENCHMARKS
-      IO-BENCHMARKS.LCOM
-   BENCH-4/
-      NEW-BENCH-4
-      NEW-BENCH-4.LCOM
-      IO-BENCHMARKS
-      IO-BENCHMARKS.LCOM
-   BENCH-5/
-      NEW-BENCH-5
-      NEW-BENCH-5.LCOM
-      IO-BENCHMARKS
-      IO-BENCHMARKS.LCOM
-      MISC-BENCHMARKS
-      MISC-BENCHMARKS.LCOM
-
-Results/
-   BENCH-1/
-   BENCH-2/
-   BENCH-3/
-   BENCH-4/
-   BENCH-5/
-```
-
-## Environment (for reported issues)
-
-- OS: macOS
-- OS version: Tahoe 26.2
-- Display/window system: X11
-- Host arch: arm64
-- Medley version: Venue Medley 2.0
-
-
-
-
 
