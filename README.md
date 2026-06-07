@@ -12,7 +12,7 @@ The benchmark set comes from the work documented by Richard P. Gabriel in [*Perf
 
 ```bash
 git clone https://github.com/interlisp/new-gabriel.git
-cd gabriel
+cd new-gabriel
 ```
 
 ### 1. Make the runner executable
@@ -53,11 +53,19 @@ For example,
 
 ## Results
 
-Each run writes output under `Results/`:
+Each run writes output under `Results/`, using the first `bench-name`
+argument as the result directory name. For example, the command above writes
+to:
+
+- `Results/TAK, ARITH, IO Benchmarks/`
+
+To use benchmark-number directory names instead, pass the benchmark number as
+the first argument too:
+
+```bash
+./do-bench.sh BENCH-1 BENCH-1 BENCH-1
+```
+
+which writes to:
 
 - `Results/BENCH-1/`
-- `Results/BENCH-2/`
-- `Results/BENCH-3/`
-- `Results/BENCH-4/`
-- `Results/BENCH-5/`
-
