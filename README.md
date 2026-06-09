@@ -12,7 +12,7 @@ The benchmark set comes from the work documented by Richard P. Gabriel in [*Perf
 
 ```bash
 git clone https://github.com/interlisp/new-gabriel.git
-cd gabriel
+cd new-gabriel
 ```
 
 ### 1. Make the runner executable
